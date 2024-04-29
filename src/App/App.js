@@ -9,7 +9,6 @@ import Header from '../components/Header';
 import SideMenu from '../components/SideMenu';
 
 import Employees from '../pages/Employees/Employees';
-import { seedEmployees } from '../utils/seed.js';
 
 const theme = createMuiTheme({
   palette: {
@@ -49,9 +48,6 @@ const useStyles = makeStyles({
 function App() {
   const [department, setDepartment] = useState([])
   const classes = useStyles();
-  useEffect(() => {
-    seedEmployees();
-  }, [])
   return (
     <ThemeProvider theme={theme}>
       <SideMenu department={department} setDepartment={(e) => setDepartment(e)} />

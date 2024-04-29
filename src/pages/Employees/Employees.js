@@ -10,6 +10,8 @@ import {
   TableCell,
   Toolbar,
   InputAdornment,
+  Box,
+  Checkbox,
 } from '@material-ui/core';
 import useTable from '../../components/useTable';
 import * as employeeService from '../../services/employeeService';
@@ -48,7 +50,7 @@ export default function Employees(props) {
   const classes = useStyles();
   const {department} = props;
   const [recordForEdit, setRecordForEdit] = useState(null);
-  const [records, setRecords] = useState(employeeService.getAllEmployees());
+  const [records, setRecords] = useState([]);
   const [filterFn, setFilterFn] = useState({
     fn: (items) => {
       return items;
@@ -67,6 +69,9 @@ export default function Employees(props) {
   });
   const [isChangeData, setIsChangeData] = useState(false)
 
+  const [checked, setChecked] = useState([]);
+
+
   const {
     TblContainer,
     TblHead,
@@ -75,6 +80,7 @@ export default function Employees(props) {
   } = useTable(records, headCells, filterFn);
 
   useEffect(() => {
+    console.log('2')
     setRecords(
       department.length > 0 && department[0] != 0
         ? employeeService
@@ -133,6 +139,49 @@ export default function Employees(props) {
     });
   };
 
+  const onMultiDelete = () => {
+    setConfirmDialog({
+      ...confirmDialog,
+      isOpen: false,
+    });
+    checked.map((id) => employeeService.deleteEmployee(id));
+    setIsChangeData(true);
+    setChecked([]);
+    setNotify({
+      isOpen: true,
+      message: "Deleted Successfully",
+      type: "success",
+    });
+  };
+
+  const onChecked = (e, id) => {
+    const selectedIndex = checked.indexOf(id);
+    let newSelected = [];
+
+    if (selectedIndex === -1) {
+      newSelected = newSelected.concat(checked, id);
+    } else if (selectedIndex === 0) {
+      newSelected = newSelected.concat(checked.slice(1));
+    } else if (selectedIndex === checked.length - 1) {
+      newSelected = newSelected.concat(checked.slice(0, -1));
+    } else if (selectedIndex > 0) {
+      newSelected = newSelected.concat(
+        checked.slice(0, selectedIndex),
+        checked.slice(selectedIndex + 1)
+      );
+    }
+    setChecked(newSelected);
+  };
+
+  const onAllCheked = (event) => {
+    if (event.target.checked) {
+      const newSelected = records.map((record) => record.id);
+      setChecked(newSelected);
+      return;
+    }
+    setChecked([]);
+  };
+
   return (
     <>
       <PageHeader
@@ -154,22 +203,50 @@ export default function Employees(props) {
             }}
             onChange={handleSearch}
           />
-          <Controls.Button
-            text='Add New'
-            variant='outlined'
-            startIcon={<AddIcon />}
-            className={classes.newButton}
-            onClick={() => {
-              setOpenPopup(true);
-              setRecordForEdit(null);
-            }}
-          />
+          <Box spacing={2} direction="row">
+            <Controls.Button
+              text="Add New"
+              variant="outlined"
+              startIcon={<AddIcon />}
+              onClick={() => {
+                setOpenPopup(true);
+                setRecordForEdit(null);
+              }}
+            />
+            <Controls.Button
+              text="Delete"
+              variant="outlined"
+              color="secondary"
+              startIcon={<CloseIcon />}
+              disabled={!checked.length}
+              onClick={() => {
+                setConfirmDialog({
+                  isOpen: true,
+                  title: "Are you sure you want to delete these records?",
+                  subTitle: "You can't undo this operation",
+                  onConfirm: () => {
+                    onMultiDelete();
+                  },
+                });
+              }}
+            />
+          </Box>
         </Toolbar>
         <TblContainer>
-          <TblHead />
+          <TblHead 
+            numChecked={checked.length}
+            rowCount={records.length}
+            onAllCheked={onAllCheked}
+          />
           <TableBody>
             {recordsAfterPagingAndSorting().map((item) => (
               <TableRow key={item.id}>
+                <TableCell>
+                  <Checkbox
+                    onChange={(e) => onChecked(e, item.id)}
+                    checked={checked.includes(item.id)}
+                  />
+                </TableCell>
                 <TableCell>{item.fullName}</TableCell>
                 <TableCell>{item.email}</TableCell>
                 <TableCell>{item.mobile}</TableCell>

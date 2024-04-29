@@ -7,6 +7,7 @@ import {
   makeStyles,
   TablePagination,
   TableSortLabel,
+  Checkbox,
 } from '@material-ui/core';
 
 const useStyles = makeStyles((theme) => ({
@@ -46,10 +47,18 @@ export default function useTable(records, headCells, filterFn) {
       setOrder(isAsc ? 'desc' : 'asc');
       setOrderBy(cellId);
     };
+    const { onAllCheked, numChecked, rowCount } = props;
 
     return (
       <TableHead>
         <TableRow>
+          <TableCell>
+            <Checkbox
+              indeterminate={numChecked > 0 && numChecked < rowCount}
+              checked={rowCount > 0 && numChecked === rowCount}
+              onChange={onAllCheked}
+            />
+          </TableCell>
           {headCells.map((headCell) => (
             <TableCell
               key={headCell.id}

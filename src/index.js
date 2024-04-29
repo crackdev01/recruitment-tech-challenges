@@ -3,7 +3,9 @@ import ReactDOM from 'react-dom';
 import './index.css';
 import App from './App/App';
 import reportWebVitals from './reportWebVitals';
+import { seedEmployees } from './utils/seed.js';
 
+seedEmployees();
 ReactDOM.render(
     <App />,
   document.getElementById('root')
