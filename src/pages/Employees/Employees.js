@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import EmployeeForm from './EmployeeForm';
 import PageHeader from '../../components/PageHeader';
 import PeopleOutlineTwoToneIcon from '@material-ui/icons/PeopleOutlineTwoTone';
@@ -44,8 +44,9 @@ const headCells = [
   { id: 'actions', label: 'Actions', disableSorting: true },
 ];
 
-export default function Employees() {
+export default function Employees(props) {
   const classes = useStyles();
+  const {department} = props;
   const [recordForEdit, setRecordForEdit] = useState(null);
   const [records, setRecords] = useState(employeeService.getAllEmployees());
   const [filterFn, setFilterFn] = useState({
@@ -64,6 +65,7 @@ export default function Employees() {
     title: '',
     subTitle: '',
   });
+  const [isChangeData, setIsChangeData] = useState(false)
 
   const {
     TblContainer,
@@ -71,6 +73,19 @@ export default function Employees() {
     TblPagination,
     recordsAfterPagingAndSorting,
   } = useTable(records, headCells, filterFn);
+
+  useEffect(() => {
+    setRecords(
+      department.length > 0 && department[0] != 0
+        ? employeeService
+            .getAllEmployees()
+            .filter((employee) =>
+              department.includes(employee.departmentId)
+            )
+        : employeeService.getAllEmployees()
+    );
+    setIsChangeData(false)
+  }, [department, isChangeData])
 
   const handleSearch = (e) => {
     let target = e.target;
@@ -91,7 +106,7 @@ export default function Employees() {
     resetForm();
     setRecordForEdit(null);
     setOpenPopup(false);
-    setRecords(employeeService.getAllEmployees());
+    setIsChangeData(true);
     setNotify({
       isOpen: true,
       message: 'Submitted Successfully',
@@ -110,11 +125,11 @@ export default function Employees() {
       isOpen: false,
     });
     employeeService.deleteEmployee(id);
-    setRecords(employeeService.getAllEmployees());
+    setIsChangeData(true);
     setNotify({
       isOpen: true,
       message: 'Deleted Successfully',
-      type: 'error',
+      type: 'success',
     });
   };
 

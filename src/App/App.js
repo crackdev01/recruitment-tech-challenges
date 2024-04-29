@@ -1,3 +1,4 @@
+import {useState, useEffect} from "react";
 import {
   CssBaseline,
   makeStyles,
@@ -46,15 +47,18 @@ const useStyles = makeStyles({
 });
 
 function App() {
+  const [department, setDepartment] = useState([])
   const classes = useStyles();
-  seedEmployees();
+  useEffect(() => {
+    seedEmployees();
+  }, [])
   return (
     <ThemeProvider theme={theme}>
-      <SideMenu />
+      <SideMenu department={department} setDepartment={(e) => setDepartment(e)} />
       <div className={classes.appMain}>
         <Header />
         
-        <Employees />
+        <Employees department={department} />
       </div>
       <CssBaseline />
     </ThemeProvider>
